@@ -93,13 +93,7 @@
           ) %>
         <% end %>
 
-        <%= render component("ui/panel").new(title: t(".specifications")) do |panel| %>
-          <% panel.with_action(
-            name: t(".manage_properties"),
-            scheme: :secondary,
-            href: spree.admin_product_product_properties_path(@product)
-          ) %>
-        <% end %>
+        <%= render component("products/show/specifications").new(product: @product, form: f) %>
       <% end %>
 
       <%= page_with_sidebar_aside do %>

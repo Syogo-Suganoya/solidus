@@ -96,4 +96,7 @@ SolidusAdmin::Engine.routes.draw do
   admin_resources :adjustment_reasons, except: [:show]
   admin_resources :store_credit_reasons, except: [:show]
   admin_resources :product_option_types, only: [], sortable: true
+  resources :product_properties, only: [:destroy] do
+    member { patch :move }
+  end
 end

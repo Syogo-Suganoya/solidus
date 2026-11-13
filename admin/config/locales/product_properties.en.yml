@@ -1,0 +1,5 @@
+en:
+  solidus_admin:
+    product_properties:
+      destroy:
+        success: "Specification was successfully removed."
