@@ -66,7 +66,7 @@ module SolidusAdmin
 
     def validate_address_type
       unless address_type
-        flash[:error] = t(".errors.address_type_invalid")
+        flash[:error] = t("solidus_admin.addresses.errors.address_type_invalid")
         redirect_to spree.admin_order_url(@order)
       end
     end
