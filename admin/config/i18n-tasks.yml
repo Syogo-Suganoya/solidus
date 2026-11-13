@@ -1,0 +1,61 @@
+# i18n-tasks finds and manages missing and unused translations: https://github.com/glebm/i18n-tasks
+#
+# Run it from the `admin` directory, e.g. `bundle exec i18n-tasks missing`.
+<% require "./lib/solidus_admin/i18n_tasks/component_data" %>
+
+base_locale: en
+locales: [en]
+
+data:
+  # Reads the translations defined in component sidecar files
+  # (`app/components/**/component.yml`) on top of the regular locale files.
+  #
+  # Sidecar files are read-only for i18n-tasks: don't run tasks that write
+  # locale data (`normalize`, `add-missing`, `remove-unused`...).
+  adapter: SolidusAdmin::I18nTasks::ComponentData
+  components_root: app/components
+
+  read:
+    - config/locales/*.%{locale}.yml
+    - config/locales/*.yml
+
+  # Translations coming from other Solidus gems and from their dependencies.
+  external:
+    - <%= File.expand_path("../core") %>/config/locales/%{locale}.yml
+
+  yaml:
+    write:
+      line_width: -1
+
+search:
+  paths:
+    - app/
+    - lib/
+
+  # Relative keys used in a component (`t(".title")`) are scoped to the
+  # component, e.g. `solidus_admin.ui.table.component.title`.
+  relative_roots:
+    - app/components
+    - app/controllers
+    - app/helpers
+    - app/views
+
+  # A component is its own scope: the method calling `t` is not part of the key.
+  relative_exclude_method_name_paths:
+    - app/components
+
+  exclude:
+    - app/assets/builds
+    - app/assets/images
+    # Templates of the generators, not actual usages
+    - lib/generators
+
+# `unused` is informative only and reports false positives:
+# - translations a component inherits are also listed under its own scope;
+# - flash messages are looked up relative to the controller handling the
+#   request, while `t` is called once in `SolidusAdmin::ResourcesController`.
+
+ignore_missing:
+  # Looked up relative to each controller inheriting from ResourcesController,
+  # see e.g. `solidus_admin.tax_categories.create.success`.
+  - 'solidus_admin.resources.{create,update,destroy}.success'
