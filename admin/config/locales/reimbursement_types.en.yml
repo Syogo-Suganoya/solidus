@@ -2,3 +2,5 @@ en:
   solidus_admin:
     reimbursement_types:
       title: "Reimbursement Types"
+      update:
+        success: "Reimbursement type was successfully updated."
