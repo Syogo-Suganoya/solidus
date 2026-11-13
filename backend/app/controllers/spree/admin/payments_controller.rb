@@ -28,10 +28,10 @@ module Spree
 
       def create
         @payment = PaymentCreate.new(@order, object_params).build
-        if @payment.payment_method.source_required? && params[:card].present? && params[:card] != "new"
+        if @payment.payment_method.source_required? && reused_source_id.present? && reused_source_id != "new"
           @payment.source = @payment.payment_method
             .reusable_sources(@order)
-            .detect { |source| source.id == params[:card].to_i }
+            .detect { |source| source.id == reused_source_id.to_i }
         end
 
         begin
@@ -79,6 +79,27 @@ module Spree
       end
 
       private
+
+      # The id of the reusable payment source picked in the source form, or
+      # "new" when a new one is being entered.
+      #
+      # Payment sources are not necessarily credit cards, so the param is
+      # called `payment_source_id`. `card` is still read for source forms that
+      # have not been updated yet.
+      def reused_source_id
+        return @reused_source_id if defined?(@reused_source_id)
+
+        @reused_source_id =
+          if params.key?(:payment_source_id)
+            params[:payment_source_id]
+          elsif params.key?(:card)
+            Spree.deprecator.warn(
+              "The `card` param of #{self.class.name}#create is deprecated. " \
+              "Please name the field for the payment source to reuse `payment_source_id` in your payment source form."
+            )
+            params[:card]
+          end
+      end
 
       def object_params
         if params[:payment] && params[:payment_source] && (source_params = params.delete(:payment_source)[params[:payment][:payment_method_id]])
