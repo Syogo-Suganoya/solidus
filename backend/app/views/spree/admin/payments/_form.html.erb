@@ -27,8 +27,17 @@
           <div class="payment-methods" id="payment_method_<%= method.id %>" data-payment-method-id="<%= method.id %>">
             <% if method.source_required? %>
               <br>
+              <% previous_sources = method.reusable_sources(@order) %>
               <%= render partial: "spree/admin/payments/source_forms/#{method.partial_name}",
-                         locals: { payment_method: method, previous_cards: method.reusable_sources(@order) } %>
+                         locals: {
+                           payment_method: method,
+                           previous_sources: previous_sources,
+                           previous_cards: ActiveSupport::Deprecation::DeprecatedObjectProxy.new(
+                             previous_sources,
+                             "The `previous_cards` local of payment source forms is deprecated. Please use `previous_sources` instead.",
+                             Spree.deprecator
+                           )
+                         } %>
             <% end %>
           </div>
         <% end %>
