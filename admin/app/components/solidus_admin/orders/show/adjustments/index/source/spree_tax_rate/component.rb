@@ -12,6 +12,6 @@ class SolidusAdmin::Orders::Show::Adjustments::Index::Source::SpreeTaxRate::Comp
   private
 
   def zone_name
-    source.zone&.name || t("spree.all_zones")
+    source.zone&.name || t(".all_zones")
   end
 end

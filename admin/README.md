@@ -86,6 +86,17 @@ bin/rails admin g solidus_admin:component foo
 Please note that when using the component generator from within the admin folder it will generate the component in the library
 instead of the sandbox application.
 
+### Checking translations
+
+[i18n-tasks](https://github.com/glebm/i18n-tasks) is configured to find translations that are used but not defined, including the ones living in component sidecar files (`component.yml`):
+
+```bash
+cd admin
+bundle exec i18n-tasks missing
+```
+
+The same check runs as part of the test suite (`spec/i18n_spec.rb`). Tasks that write locale files, like `normalize` or `add-missing`, are not supported: see the comments in `config/i18n-tasks.yml`.
+
 ## Releasing
 
 1. Update the version in `lib/solidus_admin/version.rb`
