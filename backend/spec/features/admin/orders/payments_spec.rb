@@ -243,7 +243,7 @@ describe "Payments", type: :feature do
       end
 
       it "is able to reuse customer payment source" do
-        expect(find("#card_#{cc.id}")).to be_checked
+        expect(find("#payment_source_id_#{cc.id}")).to be_checked
         click_button "Continue"
         expect(page).to have_content("Payment has been successfully created!")
       end

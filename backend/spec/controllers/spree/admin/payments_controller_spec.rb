@@ -31,7 +31,7 @@ module Spree
           let(:attributes) do
             {
               order_id: order.number,
-              card: "new",
+              payment_source_id: "new",
               payment: {
                 amount: order.total,
                 payment_method_id: payment_method.id.to_s,
@@ -102,19 +102,34 @@ module Spree
           end
           let(:attributes) do
             {
-              order_id: order.number,
-              card: card_id,
-              payment: {
+              :order_id => order.number,
+              source_param => card_id,
+              :payment => {
                 amount: order.total,
                 payment_method_id: payment_method.id.to_s
               }
             }
           end
+          let(:source_param) { :payment_source_id }
 
           before do
             own_card
             other_card
             post :create, params: attributes
+          end
+
+          context "sent with the deprecated `card` param" do
+            let(:source_param) { :card }
+            let(:card_id) { own_card.id }
+
+            around do |example|
+              Spree.deprecator.silence { example.run }
+            end
+
+            it "creates the payment with that card as the source" do
+              expect(order.payments.count).to eq(1)
+              expect(order.payments.last.source).to eq(own_card)
+            end
           end
 
           context "belonging to the order's user" do
@@ -136,6 +151,31 @@ module Spree
               expect(response).to render_template(:new)
             end
           end
+        end
+      end
+
+      describe "#create with the deprecated `card` param" do
+        let(:order) { create(:order_with_line_items, state: "payment") }
+        let(:payment_method) { create(:credit_card_payment_method, available_to_admin: true, available_to_users: false) }
+
+        it "warns about the deprecation" do
+          expect(Spree.deprecator).to receive(:warn).with(a_string_matching(/`card` param .* is deprecated/))
+
+          post :create, params: {
+            order_id: order.number,
+            card: "new",
+            payment: {amount: order.total, payment_method_id: payment_method.id.to_s}
+          }
+        end
+
+        it "does not warn when `payment_source_id` is sent" do
+          expect(Spree.deprecator).not_to receive(:warn)
+
+          post :create, params: {
+            order_id: order.number,
+            payment_source_id: "new",
+            payment: {amount: order.total, payment_method_id: payment_method.id.to_s}
+          }
         end
       end
 
