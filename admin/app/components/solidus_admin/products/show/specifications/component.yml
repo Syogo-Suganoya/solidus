@@ -1,0 +1,10 @@
+en:
+  title: "Specifications"
+  manage_properties: "Manage product specifications"
+  property: "Property"
+  remove: "Remove"
+  remove_confirmation: "Are you sure you want to remove this specification?"
+  remove_property: "Remove %{property}"
+  save: "Save"
+  value: "Value"
+  value_for: "Value for %{property}"

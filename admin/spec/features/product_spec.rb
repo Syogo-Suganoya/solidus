@@ -194,6 +194,78 @@ describe "Product", type: :feature do
     end
   end
 
+  describe "specifications", :js do
+    let!(:product) { create(:product, name: "Just a product", slug: "just-a-prod", price: 19.99) }
+    let!(:material) { create(:property, name: "material", presentation: "Material") }
+    let!(:fit) { create(:property, name: "fit", presentation: "Fit") }
+
+    it "adds a specification" do
+      visit "/admin/products/just-a-prod"
+
+      solidus_select "Material (material)", from: "Property"
+      fill_in "Value", with: "Cotton"
+      within("header") { click_on "Save" }
+
+      expect(page).to have_content("Product was successfully updated.")
+      expect(panel(title: "Specifications")).to have_field("Value for Material", with: "Cotton")
+      expect(product.reload.property("material")).to eq("Cotton")
+    end
+
+    it "updates the value of a specification" do
+      create(:product_property, product:, property: material, value: "Cotton")
+      visit "/admin/products/just-a-prod"
+
+      fill_in "Value for Material", with: "Wool"
+      within("header") { click_on "Save" }
+
+      expect(page).to have_content("Product was successfully updated.")
+      expect(product.reload.property("material")).to eq("Wool")
+    end
+
+    it "removes a specification" do
+      create(:product_property, product:, property: material, value: "Cotton")
+      create(:product_property, product:, property: fit, value: "Slim")
+      visit "/admin/products/just-a-prod"
+
+      accept_turbo_confirm("Are you sure you want to remove this specification?") do
+        click_on "Remove Material"
+      end
+
+      expect(page).to have_content("Specification was successfully removed.")
+      expect(page).to have_current_path("/admin/products/just-a-prod")
+      expect(page).not_to have_field("Value for Material")
+      expect(page).to have_field("Value for Fit", with: "Slim")
+      expect(product.reload.properties).to eq([fit])
+    end
+
+    it "allows sorting via drag and drop" do
+      create(:product_property, product:, property: material, value: "Cotton", position: 1)
+      create(:product_property, product:, property: fit, value: "Slim", position: 2)
+      visit "/admin/products/just-a-prod"
+
+      within(panel(title: "Specifications")) do
+        rows = find("[data-controller='sortable']").all(:xpath, "./*")
+        expect(rows.first).to have_text("Material")
+
+        rows[1].find(".handle").drag_to rows[0]
+
+        expect(find("[data-controller='sortable']").all(:xpath, "./*").first).to have_text("Fit")
+      end
+
+      # The new position is saved by a background request.
+      sorted_properties = -> { product.product_properties.reload.map(&:property) }
+      20.times { (sorted_properties.call == [fit, material]) ? break : sleep(0.1) }
+      expect(sorted_properties.call).to eq([fit, material])
+    end
+
+    it "is accessible" do
+      create(:product_property, product:, property: material, value: "Cotton")
+      visit "/admin/products/just-a-prod"
+
+      expect(page).to be_axe_clean
+    end
+  end
+
   describe "product organization", :js do
     let(:taxonomy) { create(:taxonomy, name: "Apparel") }
     let(:root_taxon) { taxonomy.root }

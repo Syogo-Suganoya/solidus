@@ -126,7 +126,8 @@ module SolidusAdmin
     def product_params
       params.require(:product).permit(:name, :slug, :description, :meta_title, :meta_description, :meta_keywords, :gtin,
         :condition, :price, :cost_price, :cost_currency, :sku, :shipping_category_id, :tax_category_id,
-        :available_on, :discontinue_on, :promotionable, option_type_ids: [], taxon_ids: [])
+        :available_on, :discontinue_on, :promotionable, option_type_ids: [], taxon_ids: [],
+        product_properties_attributes: [:id, :property_name, :value])
     end
   end
 end
